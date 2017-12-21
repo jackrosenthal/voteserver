@@ -1,0 +1,44 @@
+banner: |
+    COLORADO SCHOOL OF MINES
+     _    _   _  ____     .--.
+    | |  | | | |/ ___|   |o_o |
+    | |  | | | | |  _    |:_/ |
+    | |__| |_| | |_| |  //   \ \
+    |_____\___/ \____| (|     | )
+                      /'\_   _/`\
+    LINUX USERS GROUP \___)=(___/
+welcome_msg: 'Welcome to the Mines LUG voting server!'
+polls:
+    lanparty:
+        question: 'When should we do our first LAN party this semeseter?'
+        options:
+            - Friday, January 20th (6pm to ???)
+            - Friday, February 3rd (6pm to ???)
+            - Friday, February 17th (6pm to ???) (NB! Right before 4-day weekend)
+            - Friday, March 17th (6pm to ???)
+        multichoice: True
+    adviser:
+        title: 'New Faculty Adviser'
+        writein: True
+        options:
+            - Cristopher Painter-Wakefield
+    secretary:
+        title: 'Secretary (Term: Spring 2017 Semester)'
+        writein: True
+        options:
+            - Sumner Evans
+    bylaw:
+        question: |
+            Do you wish to ammend the bylaws, changing the "Webmaster" officer
+            position to a "Linux Help Guru and Wikimaster" officer position,
+            effectively allowing for the growth of our club by reaching out to
+            potential members with Linux Help and information relevant to using
+            Linux at Mines?
+        note: "A bylaw ammendment will require at least a 2/3 YES vote to pass."
+        yesno: True
+    guru:
+        title: 'Linux Help Guru and Wikimaster (Term: Spring 2017 Semester)'
+        writein: True
+        options:
+            - Nicholas Lantz
+
