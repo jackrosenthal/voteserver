@@ -105,7 +105,7 @@ class ClientConnectionHandler(socketserver.StreamRequestHandler):
                 print("    {}) {}".format(i + 1, opti), file=self.out)
             print(file=self.out)
             if multichoice:
-                print("You may select multiple options separated by commas. (eg. 1,3,5)", file=self.out)
+                print("You may select multiple options separated by commas. (e.g., 1,3,5)", file=self.out)
             while True:
                 print('Type the number{} you want{}, or ABSTAIN: '.format(
                     '(s)' if multichoice else '',
