@@ -100,19 +100,23 @@ class ClientConnectionHandler(socketserver.StreamRequestHandler):
             vote_q.put((poll_name, response))
         elif 'options' in poll.keys():
             writein = 'writein' in poll.keys() and poll['writein']
-            multichoice = 'multichoice' in poll.keys() and poll['multichoice']
+            # if a poll is both ranked and multichoiced, it is assumed that ranked is desired
+            ranked = 'ranked' in poll.keys() and poll['ranked']
+            multichoice = 'multichoice' in poll.keys() and poll['multichoice'] # aka approval voting
             for i, opti in enumerate(poll['options']):
                 print("    {}) {}".format(i + 1, opti), file=self.out)
             print(file=self.out)
-            if multichoice:
+            if ranked:
+                print("You may rank multiple options seperated by commas. (e.g. 1,3,5)", file=self.out)
+            elif multichoice:
                 print("You may select multiple options separated by commas. (e.g., 1,3,5)", file=self.out)
             while True:
                 print('Type the number{} you want{}, or ABSTAIN: '.format(
-                    '(s)' if multichoice else '',
+                    '(s)' if ranked or multichoice else '',
                     ', write-in a response' if writein else ''), file=self.out, end='')
                 self.out.flush()
                 line = self.rfile.readline().decode('utf-8').strip()
-                if multichoice:
+                if ranked or multichoice:
                     aline = list(set(r.strip() for r in line.split(',')))
                 else:
                     aline = [line]
