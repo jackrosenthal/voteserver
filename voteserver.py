@@ -6,7 +6,7 @@ import sys
 from threading import Thread, RLock, current_thread
 from datetime import datetime
 from queue import Queue
-from collections import defaultdict
+from collections import defaultdict, OrderedDict
 
 vote_q = Queue()
 login_q = Queue()
@@ -116,7 +116,14 @@ class ClientConnectionHandler(socketserver.StreamRequestHandler):
                     ', write-in a response' if writein else ''), file=self.out, end='')
                 self.out.flush()
                 line = self.rfile.readline().decode('utf-8').strip()
-                if ranked or multichoice:
+                if not line:
+                    continue
+                if ranked:
+                    # splits the line by commas, then strips, then removes empty
+                    # strings, then removes duplicates (keeping leftmost occurence)
+                    aline = list(OrderedDict.fromkeys(filter(lambda x: x != '',
+                                                             [r.strip() for r in line.split(',')])))
+                elif multichoice:
                     aline = list(set(r.strip() for r in line.split(',')))
                 else:
                     aline = [line]
@@ -134,8 +141,11 @@ class ClientConnectionHandler(socketserver.StreamRequestHandler):
                             break
                 else:
                     break
-            for r in aline:
-                vote_q.put((poll_name, r))
+            if ranked:
+                vote_q.put((poll_name, tuple(aline)))
+            else:
+                for r in aline:
+                    vote_q.put((poll_name, r))
 
     def login(self):
         self.clear_and_banner()
@@ -210,6 +220,43 @@ def list():
 def results(name):
     if name not in config['polls'].keys():
         log("Unknown poll '{}'".format(name), date=False)
+        return
+    if 'ranked' in config['polls'][name] and config['polls'][name]['ranked']:
+        # maps a candidates to a list in which the 1st element is the count of
+        # the candidate's 1st-place votes and the remaining elements are tuples
+        # where the 1st element is a count of a sequence and the 2nd element is
+        # the sequence itself
+        candidates = defaultdict(lambda: [0])
+
+        for seq, count in vp.votes[name].items():
+            candidates[seq[0]][0] += count
+            candidates[seq[0]].append((count, seq[1:]))
+
+        standings = []  # reverse order: last place to first place
+
+        while candidates:
+            # sort by count of first-place votes
+            candidates = OrderedDict(sorted(candidates.items(), key=lambda x: x[1][0]))
+
+            # eliminate candidate with least amount of first-place votes
+            loser = candidates.popitem(last=False)
+            standings.append((loser,))  # tuple so candidates can tie
+
+            # eliminate candidates whose score is the same as the loser's (tie)
+            while next((v[0] for v in candidates.values()), None) == loser[1][0]:
+                standings[-1] += (candidates.popitem(last=False),)
+
+            # distribute each losing candidate's vote to the vote's next best candidate
+            for loser in standings[-1]:
+                for count, seq in loser[1][1:]:
+                    alt = next((seq[i:] for i in range(len(seq)) if seq[i] in candidates.keys()), None)
+                    if alt:
+                        candidates[alt[0]][0] += count
+                        candidates[alt[0]].append((count, alt[1:]))
+
+        for rank, cands in enumerate(standings[::-1]):
+            for cand in cands:
+                log("{}. {}".format(rank + 1, cand[0]), date=False)
         return
     total = sum(votes for opt, votes in vp.votes[name].items() if opt != 'ABSTAIN')
     for opt, votes in vp.votes[name].items():
