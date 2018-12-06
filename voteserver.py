@@ -211,10 +211,12 @@ def close(name):
     global open_polls
     open_polls = [p for p in open_polls if p != name]
 
+_list = list
 @command
 def list():
     for k in config['polls'].keys():
         log(k, date=False)
+list = _list
 
 @command
 def results(name):
