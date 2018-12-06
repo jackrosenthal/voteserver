@@ -123,6 +123,9 @@ class ClientConnectionHandler(socketserver.StreamRequestHandler):
                     # strings, then removes duplicates (keeping leftmost occurence)
                     aline = list(OrderedDict.fromkeys(filter(lambda x: x != '',
                                                              [r.strip() for r in line.split(',')])))
+                    if 'ABSTAIN' in aline and len(aline) > 1:
+                        print('You cannot include ABSTAIN in a ranked vote. Try again', file=self.out)
+                        continue
                 elif multichoice:
                     aline = list(set(r.strip() for r in line.split(',')))
                 else:
