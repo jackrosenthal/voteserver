@@ -261,6 +261,7 @@ def results(name):
         for rank, cands in enumerate(standings[::-1]):
             for cand in cands:
                 log("{}. {}".format(rank + 1, cand[0]), date=False)
+        log("All unranked candidates tied for last place", date=False)
         return
     total = sum(votes for opt, votes in vp.votes[name].items() if opt != 'ABSTAIN')
     for opt, votes in vp.votes[name].items():
