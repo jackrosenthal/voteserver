@@ -231,6 +231,8 @@ def results(name):
         candidates = defaultdict(lambda: [0])
 
         for seq, count in vp.votes[name].items():
+            if seq[0] == 'ABSTAIN':
+                continue
             candidates[seq[0]][0] += count
             candidates[seq[0]].append((count, seq[1:]))
 
